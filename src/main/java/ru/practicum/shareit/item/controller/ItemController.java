@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.Util.Util;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
@@ -21,19 +22,19 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@Valid @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
+    public ItemDto getItemById(@Valid @Positive @RequestHeader(Util.HEADER_USER_ID) Long userId,
                                @Valid @Positive @PathVariable Long itemId) {
         return itemService.getItemById(itemId, userId);
     }
 
     @GetMapping
-    public List<ItemDto> getItems(@Valid @Positive @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public List<ItemDto> getItems(@Valid @Positive @RequestHeader(Util.HEADER_USER_ID) Long userId) {
         return itemService.getItems(userId);
     }
 
     @PostMapping()
     public ItemDto addItem(@Validated(AddItemValidation.class) @RequestBody ItemDto itemDto,
-                           @Valid @Positive @RequestHeader("X-Sharer-User-Id") Long ownerId) {
+                           @Valid @Positive @RequestHeader(Util.HEADER_USER_ID) Long ownerId) {
         itemDto.setOwnerId(ownerId);
         return itemService.addItem(itemDto);
     }
@@ -41,7 +42,7 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@Validated(UpdateItemValidation.class) @RequestBody ItemDto itemDto,
                               @Valid @Positive @PathVariable Long itemId,
-                              @Valid @Positive @RequestHeader("X-Sharer-User-Id") Long ownerId) {
+                              @Valid @Positive @RequestHeader(Util.HEADER_USER_ID) Long ownerId) {
         itemDto.setId(itemId);
         itemDto.setOwnerId(ownerId);
         return itemService.updateItem(itemDto);
@@ -54,7 +55,7 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     private CommentDto addComment(@Validated @RequestBody CommentDto commentDto,
-                                  @Valid @Positive @RequestHeader("X-Sharer-User-Id") Long userId,
+                                  @Valid @Positive @RequestHeader(Util.HEADER_USER_ID) Long userId,
                                   @Valid @Positive @PathVariable Long itemId) {
         return itemService.addComment(commentDto, userId, itemId);
     }
