@@ -1,4 +1,4 @@
-package ru.practicum.shareit.exception;
+package ru.practicum.shareit.exception.handler;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.shareit.exception.*;
 
 import javax.validation.ConstraintViolationException;
 import java.util.Objects;
@@ -40,7 +41,8 @@ public class ErrorHandler {
                 .map(v -> String.format("%s%s", v.getMessage(), v.getInvalidValue())).findFirst().orElse(null));
     }
 
-    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class, BookingNotFoundException.class})
+    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class,
+            BookingNotFoundException.class, ItemRequestNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(RuntimeException e) {
         return new ErrorResponse(e.getMessage());

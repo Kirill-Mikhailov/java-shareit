@@ -13,6 +13,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -45,25 +46,22 @@ public class BookingController {
     }
 
     @GetMapping
-    public List<SendingBookingDto> getListOfUsersBookings(@Valid @Positive
-                                                               @RequestHeader(Util.HEADER_USER_ID) Long bookerId,
-                                                          @Valid
-                                                          @Pattern(regexp = "ALL|CURRENT|PAST|FUTURE|WAITING|REJECTED",
-                                                                  message = "Unknown state: ")
-                                                          @RequestParam(value = "state", required = false,
-                                                                   defaultValue = "ALL") String state) {
-        return bookingService.getListOfUsersBookings(bookerId, state);
+    public List<SendingBookingDto> getListOfUsersBookings(
+            @Valid @Positive @RequestHeader(Util.HEADER_USER_ID) Long bookerId,
+            @Valid @Pattern(regexp = "ALL|CURRENT|PAST|FUTURE|WAITING|REJECTED", message = "Unknown state: ")
+            @RequestParam(value = "state", required = false, defaultValue = "ALL") String state,
+            @Valid @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
+            @Valid @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
+        return bookingService.getListOfBookingsUserItemsOrUserBookings(bookerId, state, from, size, false);
     }
 
     @GetMapping("/owner")
-    public List<SendingBookingDto> getListOfBookingsUserItems(@Valid @Positive
-                                                              @RequestHeader(Util.HEADER_USER_ID) Long ownerId,
-                                                              @Valid
-                                                              @Pattern(regexp =
-                                                                      "ALL|CURRENT|PAST|FUTURE|WAITING|REJECTED",
-                                                                      message = "Unknown state: ")
-                                                              @RequestParam(value = "state", required = false,
-                                                                       defaultValue = "ALL") String state) {
-        return bookingService.getListOfBookingsUserItems(ownerId, state);
+    public List<SendingBookingDto> getListOfBookingsUserItems(
+            @Valid @Positive @RequestHeader(Util.HEADER_USER_ID) Long ownerId,
+            @Valid @Pattern(regexp = "ALL|CURRENT|PAST|FUTURE|WAITING|REJECTED", message = "Unknown state: ")
+            @RequestParam(value = "state", required = false, defaultValue = "ALL") String state,
+            @Valid @PositiveOrZero @RequestParam(value = "from", defaultValue = "0") int from,
+            @Valid @Positive @RequestParam(value = "size", defaultValue = "10") int size) {
+        return bookingService.getListOfBookingsUserItemsOrUserBookings(ownerId, state, from, size, true);
     }
 }

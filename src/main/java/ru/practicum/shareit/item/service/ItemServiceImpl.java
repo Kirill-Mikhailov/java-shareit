@@ -1,6 +1,9 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.booking.model.Status;
@@ -13,6 +16,7 @@ import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
+import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
@@ -30,6 +34,7 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userStorage;
     private final BookingRepository bookingStorage;
     private final CommentRepository commentStorage;
+    private final ItemRequestRepository itemRequestStorage;
 
     @Override
     public ItemDto getItemById(Long itemId, Long userId) {
@@ -52,9 +57,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItems(Long userId) {
+    public List<ItemDto> getItems(Long userId, int from, int size) {
+        int page = from/size;
+        Pageable pageable = PageRequest.of(page, size);
         LocalDateTime now = LocalDateTime.now();
-        return itemStorage.findItemsByOwnerId(userId).stream()
+        return itemStorage.findItemsByOwnerId(userId, pageable).stream()
                 .map(item -> ItemMapper.toItemDto(
                                 item,
                                 commentStorage.findCommentsByItemIdOrderByCreatedDesc(item.getId()).stream()
@@ -76,6 +83,10 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new UserNotFoundException("Пользователя с таким id не существует"));
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(user);
+        if (Objects.nonNull(itemDto.getRequestId())) {
+            item.setItemRequest(itemRequestStorage.findById(itemDto.getRequestId())
+                    .orElseThrow(() -> new ItemRequestNotFoundException("Запроса вещи с таким id не существует")));
+        }
         return ItemMapper.toItemDto(itemStorage.save(item), null);
     }
 
@@ -93,11 +104,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItems(String text) {
+    public List<ItemDto> searchItems(String text, int from, int size) {
         if (text.isBlank()) {
             return Collections.emptyList();
         }
-        return itemStorage.searchItems(text).stream().map(item -> ItemMapper.toItemDto(item, null))
+        int page = from/size;
+        Pageable pageable = PageRequest.of(page, size);
+        return itemStorage.searchItems(text, pageable).stream().map(item -> ItemMapper.toItemDto(item, null))
                 .collect(Collectors.toList());
     }
 
