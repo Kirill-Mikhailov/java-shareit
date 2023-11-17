@@ -17,7 +17,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleEmailAlreadyExistException(EmailAlreadyExistException e) {
+    public ErrorResponse handleUserEmailAlreadyExistException(UserEmailAlreadyExistException e) {
         return new ErrorResponse(e.getMessage());
     }
 
@@ -41,8 +41,8 @@ public class ErrorHandler {
                 .map(v -> String.format("%s%s", v.getMessage(), v.getInvalidValue())).findFirst().orElse(null));
     }
 
-    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class,
-            BookingNotFoundException.class, ItemRequestNotFoundException.class})
+    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class, ItemRequestNotFoundException.class,
+            BookingNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(RuntimeException e) {
         return new ErrorResponse(e.getMessage());

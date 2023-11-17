@@ -15,7 +15,7 @@ public class UserDto {
     private Long id;
     @NotBlank(groups = AddUserValidation.class, message = "Имя не может быть пустым")
     private String name;
-    @NotNull(groups = AddUserValidation.class)
+    @NotBlank(groups = AddUserValidation.class)
     @Email(groups = {AddUserValidation.class, UpdateUserValidation.class}, message = "Некорректный email")
     private String email;
 }

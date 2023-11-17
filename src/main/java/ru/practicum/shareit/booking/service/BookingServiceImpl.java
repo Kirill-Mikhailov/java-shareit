@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.Util.DateTimeService;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -30,6 +31,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingStorage;
     private final UserRepository userStorage;
     private final ItemRepository itemStorage;
+    private final DateTimeService dateTimeService;
 
     @Override
     public SendingBookingDto addBooking(BookingDto bookingDto) {
@@ -86,7 +88,7 @@ public class BookingServiceImpl implements BookingService {
         int page = from/size;
         Pageable pageable = PageRequest.of(page, size, Sort.by("Start").descending());
         Page<Booking> bookings;
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = dateTimeService.now();
         switch (state) {
             case "CURRENT":
                 if (isOwner) bookings = bookingStorage.findBookingsByItemOwnerIdAndStartBeforeAndEndAfter(userId, now,

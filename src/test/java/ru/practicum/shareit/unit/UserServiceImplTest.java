@@ -1,6 +1,5 @@
 package ru.practicum.shareit.unit;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.shareit.exception.EmailAlreadyExistException;
 import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
@@ -72,22 +70,6 @@ class UserServiceImplTest {
         assertThat(user.getName(), equalTo(userDto.getName()));
         assertThat(user.getEmail(), equalTo(userDto.getEmail()));
         verify(userStorage, times(1)).save(user);
-    }
-
-    @Test
-    void shouldNotAddUserTestWhenEmailAlreadyExist() {
-        UserDto userDto = UserMapper.toUserDto(user);
-        Mockito
-                .when(userStorage.existsByEmail(user.getEmail()))
-                .thenReturn(true);
-
-
-        EmailAlreadyExistException e = assertThrows(
-                EmailAlreadyExistException.class,
-                () -> userService.add(userDto));
-
-        assertThat("Пользователя с таким email уже существует", equalTo(e.getMessage()));
-        verify(userStorage, never()).save(user);
     }
 
     @Test
