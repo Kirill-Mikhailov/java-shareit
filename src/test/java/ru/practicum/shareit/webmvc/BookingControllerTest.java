@@ -40,6 +40,7 @@ public class BookingControllerTest {
     private BookingDto bookingDto;
 
     private SendingBookingDto sendingBookingDto;
+
     @BeforeEach
     public void beforeEach() {
         this.bookingDto = BookingDto.builder()

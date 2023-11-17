@@ -54,7 +54,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequestDto> getAllItemRequests(Long userId, int from, int size) {
         if (!userStorage.existsById(userId)) throw new UserNotFoundException("Пользователя с таким id не существует");
-        int page = from/size;
+        int page = from / size;
         return itemRequestStorage.findItemRequestsByRequestorIdNot(userId,
                 PageRequest.of(page, size, Sort.by("created").descending()))
                 .stream().map(ItemRequestMapper::toItemRequestDto)

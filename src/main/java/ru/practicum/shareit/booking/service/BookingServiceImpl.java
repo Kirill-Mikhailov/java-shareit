@@ -85,7 +85,7 @@ public class BookingServiceImpl implements BookingService {
     public List<SendingBookingDto> getListOfBookingsUserItemsOrUserBookings(Long userId, String state, int from,
                                                                             int size, boolean isOwner) {
         if (!userStorage.existsById(userId)) throw new UserNotFoundException("Пользователя с таким id не существует");
-        int page = from/size;
+        int page = from / size;
         Pageable pageable = PageRequest.of(page, size, Sort.by("Start").descending());
         Page<Booking> bookings;
         LocalDateTime now = dateTimeService.now();

@@ -157,7 +157,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void ShouldGetUserByIdTest() {
+    void shouldGetUserByIdTest() {
         Mockito
                 .when(userStorage.findById(anyLong()))
                 .thenReturn(Optional.of(user));
@@ -171,7 +171,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    void ShouldNotGetUserByIdWhenUserNotFoundTest() {
+    void shouldNotGetUserByIdWhenUserNotFoundTest() {
         Mockito
                 .when(userStorage.findById(anyLong()))
                 .thenReturn(Optional.empty());

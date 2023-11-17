@@ -61,7 +61,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getItems(Long userId, int from, int size) {
         if (!userStorage.existsById(userId)) throw new UserNotFoundException("Пользователя с таким id не существует");
-        int page = from/size;
+        int page = from / size;
         Pageable pageable = PageRequest.of(page, size);
         LocalDateTime now = dateTimeService.now();
         return itemStorage.findItemsByOwnerId(userId, pageable).stream()
@@ -111,7 +111,7 @@ public class ItemServiceImpl implements ItemService {
         if (text.isBlank()) {
             return Collections.emptyList();
         }
-        int page = from/size;
+        int page = from / size;
         Pageable pageable = PageRequest.of(page, size);
         return itemStorage.searchItems(text, pageable).stream().map(item -> ItemMapper.toItemDto(item, null))
                 .collect(Collectors.toList());
