@@ -91,32 +91,50 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime now = dateTimeService.now();
         switch (state) {
             case "CURRENT":
-                if (isOwner) bookings = bookingStorage.findBookingsByItemOwnerIdAndStartBeforeAndEndAfter(userId, now,
-                        now, pageable);
-                else bookings = bookingStorage.findBookingsByBookerIdAndStartBeforeAndEndAfter(userId, now, now,
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerIdAndStartBeforeAndEndAfter(userId, now, now,
                             pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerIdAndStartBeforeAndEndAfter(userId, now, now,
+                            pageable);
+                }
                 break;
             case "PAST":
-                if (isOwner) bookings = bookingStorage.findBookingsByItemOwnerIdAndEndBefore(userId, now, pageable);
-                else bookings = bookingStorage.findBookingsByBookerIdAndEndBefore(userId, now, pageable);
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerIdAndEndBefore(userId, now, pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerIdAndEndBefore(userId, now, pageable);
+                }
                 break;
             case "FUTURE":
-                if (isOwner) bookings = bookingStorage.findBookingsByItemOwnerIdAndStartAfter(userId, now, pageable);
-                else bookings = bookingStorage.findBookingsByBookerIdAndStartAfter(userId, now, pageable);
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerIdAndStartAfter(userId, now, pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerIdAndStartAfter(userId, now, pageable);
+                }
                 break;
             case "WAITING":
-                if (isOwner) bookings = bookingStorage.findBookingsByItemOwnerIdAndStatus(userId, Status.WAITING,
-                        pageable);
-                else bookings = bookingStorage.findBookingsByBookerIdAndStatus(userId, Status.WAITING, pageable);
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerIdAndStatus(userId, Status.WAITING,
+                            pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerIdAndStatus(userId, Status.WAITING, pageable);
+                }
                 break;
             case "REJECTED":
-                if (isOwner) bookings = bookingStorage.findBookingsByItemOwnerIdAndStatus(userId, Status.REJECTED,
-                        pageable);
-                else bookings = bookingStorage.findBookingsByBookerIdAndStatus(userId, Status.REJECTED, pageable);
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerIdAndStatus(userId, Status.REJECTED,
+                            pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerIdAndStatus(userId, Status.REJECTED, pageable);
+                }
                 break;
             default:
-                if (isOwner) bookings = bookingStorage.findBookingsByItemOwnerId(userId, pageable);
-                else bookings = bookingStorage.findBookingsByBookerId(userId, pageable);
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerId(userId, pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerId(userId, pageable);
+                }
         }
         return bookings.stream().map(BookingMapper::toExtendedBookingDto).collect(Collectors.toList());
     }
