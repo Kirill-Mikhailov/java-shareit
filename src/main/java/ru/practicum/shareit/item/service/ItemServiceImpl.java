@@ -1,7 +1,10 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.Util.DateTimeService;
 import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -13,6 +16,7 @@ import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
+import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserRepository;
 
@@ -30,9 +34,12 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userStorage;
     private final BookingRepository bookingStorage;
     private final CommentRepository commentStorage;
+    private final ItemRequestRepository itemRequestStorage;
+    private final DateTimeService dateTimeService;
 
     @Override
     public ItemDto getItemById(Long itemId, Long userId) {
+        if (!userStorage.existsById(userId)) throw new UserNotFoundException("Пользователя с таким id не существует");
         Item item = itemStorage.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Вещи с таким id не существует"));
         ItemDto itemDto = ItemMapper.toItemDto(item,
@@ -40,7 +47,7 @@ public class ItemServiceImpl implements ItemService {
                         .map(CommentMapper::toCommentDto).collect(Collectors.toList())
         );
         if (item.getOwner().getId().equals(userId)) {
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = dateTimeService.now();
             itemDto.setLastBooking(BookingMapper.toBookingDto(bookingStorage
                     .findTopBookingByItemIdAndStatusNotAndStartBeforeOrderByEndDesc(itemDto.getId(),
                             Status.REJECTED, now)));
@@ -52,9 +59,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItems(Long userId) {
-        LocalDateTime now = LocalDateTime.now();
-        return itemStorage.findItemsByOwnerId(userId).stream()
+    public List<ItemDto> getItems(Long userId, int from, int size) {
+        if (!userStorage.existsById(userId)) throw new UserNotFoundException("Пользователя с таким id не существует");
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size);
+        LocalDateTime now = dateTimeService.now();
+        return itemStorage.findItemsByOwnerId(userId, pageable).stream()
                 .map(item -> ItemMapper.toItemDto(
                                 item,
                                 commentStorage.findCommentsByItemIdOrderByCreatedDesc(item.getId()).stream()
@@ -76,6 +86,10 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new UserNotFoundException("Пользователя с таким id не существует"));
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(user);
+        if (Objects.nonNull(itemDto.getRequestId())) {
+            item.setItemRequest(itemRequestStorage.findById(itemDto.getRequestId())
+                    .orElseThrow(() -> new ItemRequestNotFoundException("Запроса вещи с таким id не существует")));
+        }
         return ItemMapper.toItemDto(itemStorage.save(item), null);
     }
 
@@ -93,11 +107,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItems(String text) {
+    public List<ItemDto> searchItems(String text, int from, int size) {
         if (text.isBlank()) {
             return Collections.emptyList();
         }
-        return itemStorage.searchItems(text).stream().map(item -> ItemMapper.toItemDto(item, null))
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size);
+        return itemStorage.searchItems(text, pageable).stream().map(item -> ItemMapper.toItemDto(item, null))
                 .collect(Collectors.toList());
     }
 
@@ -107,7 +123,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new UserNotFoundException("Пользователя с таким id не существует"));
         Item item = itemStorage.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Вещи с таким id не существует"));
-        if (!bookingStorage.existsBookingByBookerIdAndItemIdAndEndBefore(userId, itemId, LocalDateTime.now())) {
+        if (!bookingStorage.existsBookingByBookerIdAndItemIdAndEndBefore(userId, itemId, dateTimeService.now())) {
             throw new UserNotValidException("Отзыв может оставить только арендатор вещи после завершения аренды");
         }
         return CommentMapper.toCommentDto(commentStorage.save(CommentMapper.toComment(commentDto, user, item)));

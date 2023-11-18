@@ -19,7 +19,7 @@ public class CommentMapper {
     }
 
     public static CommentDto toCommentDto(Comment comment) {
-        if (Objects.isNull(comment)) return null;
+        if (!Objects.nonNull(comment)) return null;
         return CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())

@@ -1,7 +1,12 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.Util.DateTimeService;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -26,6 +31,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingStorage;
     private final UserRepository userStorage;
     private final ItemRepository itemStorage;
+    private final DateTimeService dateTimeService;
 
     @Override
     public SendingBookingDto addBooking(BookingDto bookingDto) {
@@ -76,57 +82,59 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toExtendedBookingDto(booking);
     }
 
-    @Override
-    public List<SendingBookingDto> getListOfUsersBookings(Long bookerId, String state) {
-        if (!userStorage.existsById(bookerId)) throw new UserNotFoundException("Пользователя с таким id не существует");
-        List<Booking> bookings;
-        LocalDateTime now = LocalDateTime.now();
+    public List<SendingBookingDto> getListOfBookingsUserItemsOrUserBookings(Long userId, String state, int from,
+                                                                            int size, boolean isOwner) {
+        if (!userStorage.existsById(userId)) throw new UserNotFoundException("Пользователя с таким id не существует");
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("Start").descending());
+        Page<Booking> bookings;
+        LocalDateTime now = dateTimeService.now();
         switch (state) {
             case "CURRENT":
-                bookings = bookingStorage.findBookingsByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(bookerId,
-                        now, now);
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerIdAndStartBeforeAndEndAfter(userId, now, now,
+                            pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerIdAndStartBeforeAndEndAfter(userId, now, now,
+                            pageable);
+                }
                 break;
             case "PAST":
-                bookings = bookingStorage.findBookingsByBookerIdAndEndBeforeOrderByStartDesc(bookerId, now);
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerIdAndEndBefore(userId, now, pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerIdAndEndBefore(userId, now, pageable);
+                }
                 break;
             case "FUTURE":
-                bookings = bookingStorage.findBookingsByBookerIdAndStartAfterOrderByStartDesc(bookerId, now);
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerIdAndStartAfter(userId, now, pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerIdAndStartAfter(userId, now, pageable);
+                }
                 break;
             case "WAITING":
-                bookings = bookingStorage.findBookingsByBookerIdAndStatusOrderByStartDesc(bookerId, Status.WAITING);
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerIdAndStatus(userId, Status.WAITING,
+                            pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerIdAndStatus(userId, Status.WAITING, pageable);
+                }
                 break;
             case "REJECTED":
-                bookings = bookingStorage.findBookingsByBookerIdAndStatusOrderByStartDesc(bookerId, Status.REJECTED);
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerIdAndStatus(userId, Status.REJECTED,
+                            pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerIdAndStatus(userId, Status.REJECTED, pageable);
+                }
                 break;
             default:
-                bookings = bookingStorage.findBookingsByBookerIdOrderByStartDesc(bookerId);
-        }
-        return bookings.stream().map(BookingMapper::toExtendedBookingDto).collect(Collectors.toList());
-    }
-
-    public List<SendingBookingDto> getListOfBookingsUserItems(Long ownerId, String state) {
-        if (!userStorage.existsById(ownerId)) throw new UserNotFoundException("Пользователя с таким id не существует");
-        List<Booking> bookings;
-        LocalDateTime now = LocalDateTime.now();
-        switch (state) {
-            case "CURRENT":
-                bookings = bookingStorage.findBookingsByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(ownerId,
-                        now, now);
-                break;
-            case "PAST":
-                bookings = bookingStorage.findBookingsByItemOwnerIdAndEndBeforeOrderByStartDesc(ownerId, now);
-                break;
-            case "FUTURE":
-                bookings = bookingStorage.findBookingsByItemOwnerIdAndStartAfterOrderByStartDesc(ownerId, now);
-                break;
-            case "WAITING":
-                bookings = bookingStorage.findBookingsByItemOwnerIdAndStatusOrderByStartDesc(ownerId, Status.WAITING);
-                break;
-            case "REJECTED":
-                bookings = bookingStorage.findBookingsByItemOwnerIdAndStatusOrderByStartDesc(ownerId, Status.REJECTED);
-                break;
-            default:
-                bookings = bookingStorage.findBookingsByItemOwnerIdOrderByStartDesc(ownerId);
+                if (isOwner) {
+                    bookings = bookingStorage.findBookingsByItemOwnerId(userId, pageable);
+                } else {
+                    bookings = bookingStorage.findBookingsByBookerId(userId, pageable);
+                }
         }
         return bookings.stream().map(BookingMapper::toExtendedBookingDto).collect(Collectors.toList());
     }
