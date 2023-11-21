@@ -39,7 +39,7 @@ public class ItemController {
         return itemClient.getItems(userId, from, size);
     }
 
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<Object> addItem(@Validated(AddItemValidation.class) @RequestBody ItemDto itemDto,
                            @Valid @Positive @RequestHeader(Util.HEADER_USER_ID) Long ownerId) {
         log.info("ItemController => addItem: ownerId={}, itemDto={}", ownerId, itemDto);

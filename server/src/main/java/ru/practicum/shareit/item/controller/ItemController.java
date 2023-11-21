@@ -34,7 +34,7 @@ public class ItemController {
         return itemService.getItems(userId, from, size);
     }
 
-    @PostMapping()
+    @PostMapping
     public ItemDto addItem(@RequestBody ItemDto itemDto,
                            @RequestHeader(Util.HEADER_USER_ID) Long ownerId) {
         log.info("ItemController => addItem: ownerId={}, itemDto={}", ownerId, itemDto);

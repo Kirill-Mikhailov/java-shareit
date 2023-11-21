@@ -29,7 +29,7 @@ public class UserController {
         return userService.getUserById(userId);
     }
 
-    @PostMapping()
+    @PostMapping
     public UserDto addUser(@RequestBody UserDto userDto) {
         log.info("UserController => addUser: userDto={}", userDto);
         return userService.add(userDto);

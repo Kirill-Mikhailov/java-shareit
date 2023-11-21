@@ -32,7 +32,7 @@ public class UserController {
         return userClient.getUserById(userId);
     }
 
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<Object>  addUser(@Validated(AddUserValidation.class) @RequestBody UserDto userDto) {
         log.info("UserController => addUser: userDto={}", userDto);
         return userClient.addUser(userDto);
