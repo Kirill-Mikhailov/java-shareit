@@ -16,6 +16,7 @@ import javax.validation.constraints.Positive;
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class UserController {
 
     private final UserClient userClient;
@@ -27,7 +28,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<Object>  getUserById(@Valid @Positive @PathVariable Long userId) {
+    public ResponseEntity<Object>  getUserById(@Positive @PathVariable Long userId) {
         log.info("UserController => getUserById: userId={}", userId);
         return userClient.getUserById(userId);
     }
@@ -46,7 +47,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Object> deleteUser(@Valid @Positive @PathVariable Long userId) {
+    public ResponseEntity<Object> deleteUser(@Positive @PathVariable Long userId) {
         log.info("UserController => deleteUser: userId={}", userId);
         return userClient.deleteUser(userId);
     }
